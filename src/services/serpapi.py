@@ -1,4 +1,5 @@
 import os
+from datetime import date, timedelta
 from typing import Any, Dict, List
 
 import httpx
@@ -68,14 +69,21 @@ def normalize_hotel(property_data: Dict[str, Any], city: str) -> Dict[str, Any]:
     }
 
 
-def fetch_hotels(city: str) -> List[Dict[str, Any]]:
+def fetch_hotels(city: str, check_in_date: date | None = None, check_out_date: date | None = None) -> List[Dict[str, Any]]:
     api_key = os.getenv("SERPAPI_API_KEY")
     if not api_key:
         raise RuntimeError("SERPAPI_API_KEY is not configured")
 
+    if check_in_date is None:
+        check_in_date = date.today() + timedelta(days=1)
+    if check_out_date is None:
+        check_out_date = check_in_date + timedelta(days=1)
+
     params = {
         "engine": "google_hotels",
         "q": f"hotels in {city}",
+        "check_in_date": check_in_date.isoformat(),
+        "check_out_date": check_out_date.isoformat(),
         "api_key": api_key,
     }
 

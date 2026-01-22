@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 import httpx
@@ -23,9 +25,14 @@ async def list_hotels(db: Session = Depends(get_db)):
 
 
 @router.post("/sync", response_model=SerpSyncResponse)
-async def sync_hotels(city: str = "New York", db: Session = Depends(get_db)):
+async def sync_hotels(
+    city: str = "New York",
+    check_in_date: date | None = None,
+    check_out_date: date | None = None,
+    db: Session = Depends(get_db),
+):
     try:
-        hotels = fetch_hotels(city)
+        hotels = fetch_hotels(city, check_in_date=check_in_date, check_out_date=check_out_date)
     except RuntimeError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
     except httpx.HTTPStatusError as exc:
