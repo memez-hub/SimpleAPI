@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+
+#for database
+sqlalchemy
+psycopg2
