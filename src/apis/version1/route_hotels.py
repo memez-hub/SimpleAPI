@@ -1,18 +1,42 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from schemas.hotels import HotelCreate, HotelResponce
+from schemas.hotels import HotelCreate, HotelResponce, SerpSyncResponse
 from db.session import get_db
-from db.repository.hotels import create_new_hotel, get_hotels
+from db.repository.hotels import create_new_hotel, get_hotels, upsert_hotel_from_serp
+from services.serpapi import fetch_hotels
 
 router = APIRouter()
+
 
 @router.post("/", response_model=HotelResponce)
 async def create_hotel(hotel: HotelCreate, db: Session = Depends(get_db)):
     new_hotel = create_new_hotel(db=db, hotel=hotel)
     return new_hotel
 
+
 @router.get("/", response_model=list[HotelResponce])
 async def list_hotels(db: Session = Depends(get_db)):
     hotels = get_hotels(db=db)
     return hotels
+
+
+@router.post("/sync", response_model=SerpSyncResponse)
+async def sync_hotels(city: str = "New York", db: Session = Depends(get_db)):
+    try:
+        hotels = fetch_hotels(city)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail="Failed to fetch data from Serp API") from exc
+
+    created = 0
+    updated = 0
+    for hotel_data in hotels:
+        _, was_created = upsert_hotel_from_serp(db=db, hotel_data=hotel_data)
+        if was_created:
+            created += 1
+        else:
+            updated += 1
+
+    return SerpSyncResponse(city=city, total=len(hotels), created=created, updated=updated)
