@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+import httpx
 
 from schemas.hotels import HotelCreate, HotelResponce, SerpSyncResponse
 from db.session import get_db
@@ -27,6 +28,16 @@ async def sync_hotels(city: str = "New York", db: Session = Depends(get_db)):
         hotels = fetch_hotels(city)
     except RuntimeError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Serp API error {exc.response.status_code}: {exc.response.text}",
+        ) from exc
+    except httpx.RequestError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Serp API request failed: {exc}",
+        ) from exc
     except Exception as exc:
         raise HTTPException(status_code=502, detail="Failed to fetch data from Serp API") from exc
 

@@ -75,7 +75,7 @@ def fetch_hotels(city: str) -> List[Dict[str, Any]]:
 
     params = {
         "engine": "google_hotels",
-        "q": city,
+        "q": f"hotels in {city}",
         "api_key": api_key,
     }
 
@@ -85,4 +85,6 @@ def fetch_hotels(city: str) -> List[Dict[str, Any]]:
 
     data = response.json()
     hotels = _extract_properties(data)
+    if not hotels and "error" in data:
+        raise RuntimeError(f"Serp API error: {data.get('error')}")
     return [normalize_hotel(hotel, city) for hotel in hotels]
