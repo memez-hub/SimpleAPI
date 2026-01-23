@@ -1,9 +1,12 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from pathlib import Path
 from typing import Generator
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./sqlite3.db"
+
+ROOT_DIR = Path(__file__).resolve().parents[2]
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{ROOT_DIR / 'sqlite3.db'}"
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
