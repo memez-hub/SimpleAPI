@@ -69,6 +69,13 @@ def normalize_hotel(property_data: Dict[str, Any], city: str) -> Dict[str, Any]:
     }
 
 
+def fetch_hotels(
+    city: str,
+    check_in_date: date | None = None,
+    check_out_date: date | None = None,
+    adults: int = 2,
+    currency: str = "USD",
+) -> List[Dict[str, Any]]:
 def fetch_hotels(city: str, check_in_date: date | None = None, check_out_date: date | None = None) -> List[Dict[str, Any]]:
     api_key = os.getenv("SERPAPI_API_KEY")
     if not api_key:
@@ -84,6 +91,8 @@ def fetch_hotels(city: str, check_in_date: date | None = None, check_out_date: d
         "q": f"hotels in {city}",
         "check_in_date": check_in_date.isoformat(),
         "check_out_date": check_out_date.isoformat(),
+        "adults": adults,
+        "currency": currency,
         "api_key": api_key,
     }
 
@@ -95,4 +104,6 @@ def fetch_hotels(city: str, check_in_date: date | None = None, check_out_date: d
     hotels = _extract_properties(data)
     if not hotels and "error" in data:
         raise RuntimeError(f"Serp API error: {data.get('error')}")
+    if not hotels:
+        raise RuntimeError("Serp API returned no hotels for the given query and dates.")
     return [normalize_hotel(hotel, city) for hotel in hotels]

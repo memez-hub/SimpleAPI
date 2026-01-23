@@ -29,6 +29,21 @@ async def sync_hotels(
     city: str = "New York",
     check_in_date: date | None = None,
     check_out_date: date | None = None,
+    adults: int = 2,
+    currency: str = "USD",
+    db: Session = Depends(get_db),
+):
+    try:
+        hotels = fetch_hotels(
+            city,
+            check_in_date=check_in_date,
+            check_out_date=check_out_date,
+            adults=adults,
+            currency=currency,
+        )
+    except RuntimeError as exc:
+        status_code = 500 if "SERPAPI_API_KEY" in str(exc) else 502
+        raise HTTPException(status_code=status_code, detail=str(exc)) from exc
     db: Session = Depends(get_db),
 ):
     try:
