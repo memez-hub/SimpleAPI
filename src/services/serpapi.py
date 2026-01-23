@@ -76,7 +76,6 @@ def fetch_hotels(
     adults: int = 2,
     currency: str = "USD",
 ) -> List[Dict[str, Any]]:
-def fetch_hotels(city: str, check_in_date: date | None = None, check_out_date: date | None = None) -> List[Dict[str, Any]]:
     api_key = os.getenv("SERPAPI_API_KEY")
     if not api_key:
         raise RuntimeError("SERPAPI_API_KEY is not configured")
