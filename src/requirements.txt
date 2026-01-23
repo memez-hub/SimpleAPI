@@ -4,3 +4,4 @@ uvicorn
 #for database
 sqlalchemy
 psycopg2
+httpx
