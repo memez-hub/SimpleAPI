@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+
+gunicorn
+
+# for database
+sqlalchemy
+psycopg2-binary
+httpx

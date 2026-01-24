@@ -1,20 +1,23 @@
-from pathlib import Path
 from typing import Generator
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from core.config import settings
 
-ROOT_DIR = Path(__file__).resolve().parents[2]
-SQLALCHEMY_DATABASE_URL = f"sqlite:///{ROOT_DIR / 'sqlite3.db'}"
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+
+engine_kwargs = {}
+if settings.DATABASE_URL.startswith("sqlite"):
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
+
+engine = create_engine(settings.DATABASE_URL, **engine_kwargs)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+
 def get_db() -> Generator:
+    db = SessionLocal()
     try:
-        db = SessionLocal()
         yield db
     finally:
         db.close()
-        
