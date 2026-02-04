@@ -99,3 +99,7 @@ def upsert_hotel_from_serp(db: Session, hotel_data: dict) -> tuple[Hotel, bool]:
 
 def get_hotels(db: Session):
     return db.query(Hotel).all()
+
+
+def get_hotel_by_id(db: Session, hotel_id: int):
+    return db.query(Hotel).filter(Hotel.id == hotel_id).first()
