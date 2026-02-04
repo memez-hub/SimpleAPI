@@ -6,7 +6,12 @@ import httpx
 
 from schemas.hotels import HotelCreate, HotelResponce, SerpSyncResponse
 from db.session import get_db
-from db.repository.hotels import create_new_hotel, get_hotels, upsert_hotel_from_serp
+from db.repository.hotels import (
+    create_new_hotel,
+    get_hotel_by_id,
+    get_hotels,
+    upsert_hotel_from_serp,
+)
 from services.serpapi import fetch_hotels
 
 router = APIRouter()
@@ -22,6 +27,14 @@ async def create_hotel(hotel: HotelCreate, db: Session = Depends(get_db)):
 async def list_hotels(db: Session = Depends(get_db)):
     hotels = get_hotels(db=db)
     return hotels
+
+
+@router.get("/{hotel_id}", response_model=HotelResponce)
+async def get_hotel(hotel_id: int, db: Session = Depends(get_db)):
+    hotel = get_hotel_by_id(db=db, hotel_id=hotel_id)
+    if not hotel:
+        raise HTTPException(status_code=404, detail="Hotel not found")
+    return hotel
 
 
 @router.post("/sync", response_model=SerpSyncResponse)
